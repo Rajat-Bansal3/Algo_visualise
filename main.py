@@ -8,14 +8,14 @@ pygame.init()
 
 class info:
     SIDE_PAD = 100
-    TOP_PAD = 150
+    TOP_PAD = 100
     
     FONT = pygame.font.Font("S:\FONTS\GothicJoker-gxxGP.ttf",25)
     LARGEFONT = pygame.font.SysFont('Segoe UI',50,bold=True,italic=True)
 
     WHITE = 255 , 255 , 255
     BLACK = 0 , 0 , 0
-    RED = 255 , 255 , 255
+    RED = 255 , 0 , 0
     GREEN = 0 , 255 , 0
     GREY = 125 , 125 , 125
     BG_COLOR = WHITE
@@ -58,27 +58,26 @@ def draw(info):
 
     pygame.display.update()
 
-def draw_list(info , color_pos = {} , clear_bg = False):
-    lst  = info.lst
+def draw_list(drawinfo , color_pos = {} , clear_bg = False):
+    lst  = drawinfo.lst
 
     if clear_bg:
-        clear_rect = (info.SIDE_PAD//2 , info.TOP_PAD,info.width - info.SIDE_PAD , info.HEIGHT - info.TOP_PAD )
-        pygame.draw.rect(info.window,info.BG_COLOR,clear_rect)
+        clear_rect = (drawinfo.SIDE_PAD//2 , drawinfo.TOP_PAD,drawinfo.width - drawinfo.SIDE_PAD , drawinfo.height - drawinfo.TOP_PAD )
+        pygame.draw.rect(drawinfo.window,drawinfo.BG_COLOR,clear_rect)
 
     if clear_bg:
         pygame.display.update()
-        
 
     for i ,val in enumerate(lst):
-        x = info.stx + i * info.block_width
-        y = info.height - (val - info.min_val) * info.block_height
+        x = drawinfo.stx + i * drawinfo.block_width
+        y = drawinfo.height - (val - drawinfo.min_val) * drawinfo.block_height
 
-        color = info.GRADIENTS[ i % 3 ]
-        
+        color = drawinfo.GRADIENTS[i % 3]
+
         if i in color_pos:
             color = color_pos[i] 
         
-        pygame.draw.rect(info.window,color , (x , y , info.block_width , info.height ))
+        pygame.draw.rect(drawinfo.window,color , (x , y , drawinfo.block_width , drawinfo.height ))
 
 
 
@@ -90,24 +89,23 @@ def st_lst(a , min_val , max_val):
 
     return lst
 
-def bubble(info , ascending = True):
-    lst = info.lst
+def bubble(drawinfo , ascending = True):
+    lst = drawinfo.lst
 
-    for i in range(len(lst) - 1):
-        for j in range(len(lst) - 1 - i):
-            num1 = lst[j]
-            num2 = lst[j + 1]
-
-            if (num1 > num2 and ascending) or (num1 < num2 and not ascending):
-                num1 , num2 = num2 , num1
-                draw_list(info,{j:info.GREEN,j+1:info.RED})
+    
+    t = 0
+    for i in range(len(lst)-1,0,-1):
+        for j in range(i):
+            if lst[j]>lst[j+1]:
+                t = lst[j]
+                lst[j] = lst[j+1]
+                lst[j+1] = t
+                draw_list(drawinfo, {j: drawinfo.GREEN, j + 1: drawinfo.RED}, True)
                 yield True
     return lst
 
 def insertion():
     pass
-
-
 
 
 def main():
@@ -116,19 +114,20 @@ def main():
     
     a = 50
     min_val = 0
-    max_val = 200
+    max_val = 20
 
     sorting = False
     ascending = True
+    
     sorting_algorithm = bubble
-    sorting_algo_name = "Bubble"
+    sorting_algo_name = "Bubble Sort"
     sorting_algorithm_generator = None
 
     lst = st_lst(a , min_val , max_val)
     drawinfo = info(800,600,lst)
     
     while y :
-        clock.tick(120)
+        clock.tick(20)
 
         if sorting:
             try:
@@ -143,8 +142,12 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 y = False
+            
+            
             if event.type != pygame.KEYDOWN:
                 continue
+
+            
             if event.key == pygame.K_r:
                 list = st_lst(a,min_val,max_val)
                 drawinfo.setlist(lst=list)
@@ -153,11 +156,11 @@ def main():
             
             elif event.key == pygame.K_SPACE and sorting == False:
                 sorting = True
+                sorting_algorithm_generator = sorting_algorithm(drawinfo , ascending )
             
 
             elif event.key == pygame.K_a and sorting == False:
                 ascending = True
-                sorting_algorithm_generator = sorting_algorithm(info, ascending)
 
 
             elif event.key == pygame.K_d and sorting == False:
