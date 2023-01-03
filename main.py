@@ -5,6 +5,12 @@ import random
 'initialised window'
 pygame.init()
 
+'setting title'
+pygame.display.set_caption("ALGOVIS")
+
+'setting icon'
+icon = pygame.image.load("neural.png")
+pygame.display.set_icon(icon)
 
 'class to store value'
 class info:
