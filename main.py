@@ -1,17 +1,18 @@
 import pygame
 import random
-import math
 
+
+'initialised window'
 pygame.init()
 
 
-
+'class to store value'
 class info:
-    SIDE_PAD = 100
-    TOP_PAD = 100
+    SIDE_PAD = 50
+    TOP_PAD = 150
     
     FONT = pygame.font.Font("S:\FONTS\GothicJoker-gxxGP.ttf",25)
-    LARGEFONT = pygame.font.SysFont('Segoe UI',50,bold=True,italic=True)
+    LARGEFONT = pygame.font.SysFont('S:\FONTS\GothicJoker-gxxGP.ttf',35,bold=False,italic=True)
 
     WHITE = 255 , 255 , 255
     BLACK = 0 , 0 , 0
@@ -20,11 +21,13 @@ class info:
     GREY = 125 , 125 , 125
     BG_COLOR = WHITE
 
+
     GRADIENTS = [
         (128, 128, 128),
 		(160, 160, 160),
 		(192, 192, 192)
     ]
+
 
     def __init__(self,width,height,lst) :
         self.height = height
@@ -35,6 +38,7 @@ class info:
         pygame.display.set_caption("visalgo")
         self.setlist(lst)
 
+    "making the dimension and setting offsets of list px's"
     def setlist(self , lst):
         self.lst = lst
         self.min_val = min(lst)
@@ -45,22 +49,33 @@ class info:
         self.stx = self.SIDE_PAD // 2
 
 
+'drawing canvas and rendering all the text elements'
+def draw(info,algoname,ascending):
 
-def draw(info):
-    info.window.fill(info.BG_COLOR)
+    info.window.fill(info.BLACK)
+
     draw_list(info)
+
+    op = "ascending" if ascending else "descending"
+    a = "{}-{}".format(algoname,op)
+
+    __txt = info.LARGEFONT.render(a,5,info.GREEN,)
+    info.window.blit(__txt,((info.width/2 - __txt.get_width()/2),5))
+
+    txt = info.FONT.render("R->Reset || A->ascending || D->Descending || ESC->Quit || SPACE->Start Sorting",5,info.GREEN,)
+    info.window.blit(txt,((info.width/2 - txt.get_width()/2),40))
     
-    txt = info.FONT.render("R->Reset || A->ascending || D->Descending || ESC->Quit || SPACE->Start Sorting",5,info.BLACK,)
-    info.window.blit(txt,((info.width/2 - txt.get_width()/2),5))
-    
-    _txt = info.FONT.render("B->Bubble Sort || I->Insertion Sort",5,info.BLACK,)
-    info.window.blit(_txt,((info.width/2 - _txt.get_width()/2),35))
+    _txt = info.FONT.render("B->Bubble Sort || I->Insertion Sort",5,info.GREEN,)
+    info.window.blit(_txt,((info.width/2 - _txt.get_width()/2),70))
 
     pygame.display.update()
 
-def draw_list(drawinfo , color_pos = {} , clear_bg = False):
-    lst  = drawinfo.lst
 
+'drawing list bases on offsets'
+def draw_list(drawinfo , color_pos = {} , clear_bg = False):
+
+    lst  = drawinfo.lst
+    
     if clear_bg:
         clear_rect = (drawinfo.SIDE_PAD//2 , drawinfo.TOP_PAD,drawinfo.width - drawinfo.SIDE_PAD , drawinfo.height - drawinfo.TOP_PAD )
         pygame.draw.rect(drawinfo.window,drawinfo.BG_COLOR,clear_rect)
@@ -69,18 +84,20 @@ def draw_list(drawinfo , color_pos = {} , clear_bg = False):
         pygame.display.update()
 
     for i ,val in enumerate(lst):
+
         x = drawinfo.stx + i * drawinfo.block_width
         y = drawinfo.height - (val - drawinfo.min_val) * drawinfo.block_height
 
         color = drawinfo.GRADIENTS[i % 3]
 
         if i in color_pos:
-            color = color_pos[i] 
+            color = color_pos[i]
+            print(i)#comment out if u need no output in terminal i did this for my own refference of indexing swaps and insertions points
         
         pygame.draw.rect(drawinfo.window,color , (x , y , drawinfo.block_width , drawinfo.height ))
 
 
-
+'starting random list generator'
 def st_lst(a , min_val , max_val):
     lst = []
 
@@ -89,32 +106,76 @@ def st_lst(a , min_val , max_val):
 
     return lst
 
+
+'bubble sort algo gen'
 def bubble(drawinfo , ascending = True):
     lst = drawinfo.lst
 
-    
     t = 0
+
     for i in range(len(lst)-1,0,-1):
         for j in range(i):
-            if lst[j]>lst[j+1]:
-                t = lst[j]
-                lst[j] = lst[j+1]
-                lst[j+1] = t
-                draw_list(drawinfo, {j: drawinfo.GREEN, j + 1: drawinfo.RED}, True)
-                yield True
+            num1 = lst[j]
+            num2 = lst[j+1]
+            
+            if (num1 > num2 and ascending) or (num1 < num2 and not ascending):
+                if lst[j]>lst[j+1]:
+                    t = lst[j]
+                    lst[j] = lst[j+1]
+                    lst[j+1] = t
+                   
+                    draw_list(drawinfo,color_pos={j:drawinfo.RED,j+1:drawinfo.GREEN},clear_bg=False)
+                    print(j)
+                   
+                    yield True
+                
+                
+                else:
+                    t = lst[j+1]
+                    lst[j+1] = lst[j]
+                    lst[j] = t
+                    
+                    draw_list(drawinfo,color_pos={j:drawinfo.RED,j+1:drawinfo.GREEN},clear_bg=False)
+                    print(j)
+                    
+                    yield True
+                
     return lst
 
-def insertion():
-    pass
+'insertion sort algorithm gen'
+def insertion(drawinfo, ascending=True):
+	lst = drawinfo.lst
 
+	for i in range(1, len(lst)):
+		current = lst[i]
 
+		while True:
+			ascending_sort = i > 0 and lst[i - 1] > current and ascending
+			descending_sort = i > 0 and lst[i - 1] < current and not ascending
+
+			if not ascending_sort and not descending_sort:
+				break
+
+			lst[i] = lst[i - 1]
+			i = i - 1
+			lst[i] = current
+
+			draw_list(drawinfo, {i - 1: drawinfo.GREEN, i: drawinfo.RED}, False)
+
+			yield True
+
+	return lst
+                
+
+'main function with variables and class called'
 def main():
+
     y = True
     clock = pygame.time.Clock()
     
-    a = 50
+    a = 150
     min_val = 0
-    max_val = 20
+    max_val = 100
 
     sorting = False
     ascending = True
@@ -127,8 +188,11 @@ def main():
     drawinfo = info(800,600,lst)
     
     while y :
-        clock.tick(20)
 
+        clock.tick(128)#set tick rate accordingly and comment out this whole line for fastest execution or visualisation
+       
+       
+        'generator iterator'
         if sorting:
             try:
                 next(sorting_algorithm_generator)
@@ -136,9 +200,10 @@ def main():
                 sorting = False
 		
         else:
-            draw(drawinfo)
+            draw(drawinfo,sorting_algo_name,ascending)
 
         
+        'defining events'
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 y = False
@@ -165,13 +230,24 @@ def main():
 
             elif event.key == pygame.K_d and sorting == False:
                 ascending = False
+            
+
+            elif event.key == pygame.K_b :
+                sorting_algo_name = "Bubble Sort"
+                sorting_algorithm = bubble
+            
+
+            elif event.key == pygame.K_i :
+                sorting_algo_name = "Insertion Sort"
+                sorting_algorithm = insertion
 
 
             elif event.key == pygame.K_ESCAPE and sorting == False:
                 y = False
 
 
-        draw(drawinfo)
+        'initial draw on canvas'
+        draw(drawinfo,sorting_algo_name,ascending)
 
     
     pygame.quit()
